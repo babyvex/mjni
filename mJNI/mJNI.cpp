@@ -80,9 +80,7 @@ jfieldID mJNI::findFieldID(jclass klass, const char *name, const char *sig) {
     if (!klass || !name) return 0;
 
     void* constants = nullptr;
-    mReadMemory(&constants,
-                (void*)((uintptr_t)klass + Offsets::InstanceKlass::constants),
-                sizeof(constants));
+    mReadMemory(&constants,(void*)((uintptr_t)klass + Offsets::InstanceKlass::constants),sizeof(constants));
     if (!constants) return 0;
 
     uintptr_t baseAddr = (uintptr_t)constants + Offsets::ConstantPool::constPoolSize;
@@ -91,23 +89,20 @@ jfieldID mJNI::findFieldID(jclass klass, const char *name, const char *sig) {
     // 21
     if (Offsets::InstanceKlass::fieldsInfoStream != 0) {
         std::vector<FieldInfo20> fields;
-        void* fieldInfo = readPointer(
-            (void*)((uintptr_t)klass + Offsets::InstanceKlass::fieldsInfoStream));
+        void* fieldInfo = readPointer( (void*)((uintptr_t)klass + Offsets::InstanceKlass::fieldsInfoStream));
 
         if (fieldInfo && mJNIUtilityFunctions::copyFieldInfo(fieldInfo, fields)) {
             for (size_t i = 0; i < fields.size(); i++) {
                 FieldInfo20 field = fields.at(i);
 
-                std::string fName = mJNIUtilityFunctions::readSymbol(
-                    (void*)(baseAddr + field.name_index() * sizeof(intptr_t)));
+                std::string fName = mJNIUtilityFunctions::readSymbol( (void*)(baseAddr + field.name_index() * sizeof(intptr_t)));
 
                 if (fName == name) {
                     if (!sig || sig[0] == '\0') {
                         return field.offset();
                     }
 
-                    std::string fDesc = mJNIUtilityFunctions::readSymbol(
-                        (void*)(baseAddr + field.signature_index() * sizeof(intptr_t)));
+                    std::string fDesc = mJNIUtilityFunctions::readSymbol( (void*)(baseAddr + field.signature_index() * sizeof(intptr_t)));
 
                     if (fDesc == sig) {
                         return field.offset();
